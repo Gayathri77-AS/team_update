@@ -10,7 +10,8 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for flashing messages
 
 cred_json = os.environ.get('FIREBASE_ADMIN_SDK')
-cred = credentials.Certificate(io.StringIO(cred_json))
+cred_dict = json.loads(cred_json)  # Convert JSON string to dictionary
+cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     'storageBucket': os.environ.get('FIREBASE_STORAGE_BUCKET')
 })

@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import openpyxl
 import os
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Required for flashing messages
 
 def write_to_excel(name, message):
     file_path = 'updates.xlsx'
-    
+
     if not os.path.isfile(file_path):
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -29,10 +30,16 @@ def index():
 def submit():
     name = request.form.get('name')
     message = request.form.get('message')
-    
+
     if name and message:
-        write_to_excel(name, message)
-    
+        try:
+            write_to_excel(name, message)
+            flash('Update submitted successfully!', 'success')
+        except Exception as e:
+            flash(f'Error saving to Excel: {e}', 'error')
+    else:
+        flash('Name and message are required!', 'warning')
+
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

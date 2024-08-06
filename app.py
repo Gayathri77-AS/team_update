@@ -26,7 +26,7 @@ def upload_to_firebase(file_name, blob_name):
 
 
 
-def write_to_excel(name, message):
+def write_to_excel(date, name, message):
     file_path = 'updates.xlsx'
     print(f"Attempting to write to {file_path}")
 
@@ -34,15 +34,14 @@ def write_to_excel(name, message):
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = 'Updates'
-        sheet.append(['Timestamp', 'Name', 'Message'])
+        sheet.append(['Date', 'Name', 'Message'])
         print("Created new workbook and sheet.")
     else:
         workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
         print("Loaded existing workbook.")
 
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    sheet.append([timestamp, name, message])
+    sheet.append([date, name, message])
     workbook.save(file_path)
     print(f"Saved data to {file_path}.")
 
@@ -66,16 +65,18 @@ def submit():
         flash('Name and message are required!', 'warning')
 
     return redirect(url_for('index'))
+
 '''
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form.get('name')
     message = request.form.get('message')
+    date = request.form.get('date')
 
-    if name and message:
+    if name and date and message:
         try:
             # Write to Excel file
-            write_to_excel(name, message)
+            write_to_excel(date, name, message)
 
             # Upload to Firebase Storage
             upload_to_firebase('updates.xlsx', 'updates.xlsx')
@@ -88,6 +89,7 @@ def submit():
         flash('Name and message are required!', 'warning')
 
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

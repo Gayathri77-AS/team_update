@@ -50,7 +50,7 @@ def write_to_excel(name, message):
 @app.route('/')
 def index():
     return render_template('index.html')
-
+'''
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form.get('name')
@@ -62,6 +62,28 @@ def submit():
             flash('Update submitted successfully!', 'success')
         except Exception as e:
             flash(f'Error saving to Excel: {e}', 'error')
+    else:
+        flash('Name and message are required!', 'warning')
+
+    return redirect(url_for('index'))
+'''
+@app.route('/submit', methods=['POST'])
+def submit():
+    name = request.form.get('name')
+    message = request.form.get('message')
+
+    if name and message:
+        try:
+            # Write to Excel file
+            write_to_excel(name, message)
+
+            # Upload to Firebase Storage
+            upload_to_firebase('updates.xlsx', 'updates.xlsx')
+
+            # Flash success message
+            flash('Update submitted and uploaded successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'error')
     else:
         flash('Name and message are required!', 'warning')
 

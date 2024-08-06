@@ -1,19 +1,25 @@
-from flask import Flask, render_template, request
-import sqlite3
+from flask import Flask, render_template, request, redirect, url_for
+import openpyxl
+import os
 from datetime import datetime
 
 app = Flask(__name__)
 
-# Database setup
-def init_db():
-    with sqlite3.connect('updates.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS updates
-                          (id INTEGER PRIMARY KEY,
-                          timestamp TEXT,
-                          name TEXT,
-                          message TEXT)''')
-        conn.commit()
+def write_to_excel(name, message):
+    file_path = 'updates.xlsx'
+    
+    if not os.path.isfile(file_path):
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = 'Updates'
+        sheet.append(['Timestamp', 'Name', 'Message'])
+    else:
+        workbook = openpyxl.load_workbook(file_path)
+        sheet = workbook.active
+
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    sheet.append([timestamp, name, message])
+    workbook.save(file_path)
 
 @app.route('/')
 def index():
@@ -21,19 +27,14 @@ def index():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    name = request.form['name']
-    message = request.form['message']
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    name = request.form.get('name')
+    message = request.form.get('message')
     
-    with sqlite3.connect('updates.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO updates (timestamp, name, message) VALUES (?, ?, ?)",
-                       (timestamp, name, message))
-        conn.commit()
+    if name and message:
+        write_to_excel(name, message)
     
-    return "Update submitted!"
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    init_db()  # This line initializes the database and creates the table if it doesn't exist
     app.run(debug=True)
 

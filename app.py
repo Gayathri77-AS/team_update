@@ -1,10 +1,26 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+import firebase_admin
+from firebase_admin import credentials, storage
 import openpyxl
 import os
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for flashing messages
+
+cred = credentials.Certificate('FIREBASE_ADMIN_SDK')
+firebase_admin.initialize_app(cred, {
+    'storageBucket': os.environ.get('FIREBASE_STORAGE_BUCKET')  # Use your Firebase Storage bucket name
+})
+
+bucket = storage.bucket()
+
+def upload_to_firebase(file_name, blob_name):
+    blob = bucket.blob(blob_name)
+    blob.upload_from_filename(file_name)
+    print("Upload Successful")
+
+
 
 def write_to_excel(name, message):
     file_path = 'updates.xlsx'

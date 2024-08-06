@@ -8,9 +8,10 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for flashing messages
 
-cred = credentials.Certificate('FIREBASE_ADMIN_SDK')
+cred_json = os.environ.get('FIREBASE_ADMIN_SDK')
+cred = credentials.Certificate(io.StringIO(cred_json))
 firebase_admin.initialize_app(cred, {
-    'storageBucket': os.environ.get('FIREBASE_STORAGE_BUCKET')  # Use your Firebase Storage bucket name
+    'storageBucket': os.environ.get('FIREBASE_STORAGE_BUCKET')
 })
 
 bucket = storage.bucket()

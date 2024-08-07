@@ -24,9 +24,7 @@ def upload_to_firebase(file_name, blob_name):
     blob.upload_from_filename(file_name)
     print("Upload Successful")
 
-
-
-def write_to_excel(date, name, message):
+def write_to_excel(date, time, name, message):
     file_path = 'updates.xlsx'
     print(f"Attempting to write to {file_path}")
 
@@ -34,49 +32,32 @@ def write_to_excel(date, name, message):
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = 'Updates'
-        sheet.append(['Date', 'Name', 'Message'])
+        sheet.append(['Date', 'Time', 'Name', 'Message'])
         print("Created new workbook and sheet.")
     else:
         workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
         print("Loaded existing workbook.")
 
-    sheet.append([date, name, message])
+    sheet.append([date, time, name, message])
     workbook.save(file_path)
     print(f"Saved data to {file_path}.")
-
 
 @app.route('/')
 def index():
     return render_template('index.html')
-'''
+
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form.get('name')
-    message = request.form.get('message')
-
-    if name and message:
-        try:
-            write_to_excel(name, message)
-            flash('Update submitted successfully!', 'success')
-        except Exception as e:
-            flash(f'Error saving to Excel: {e}', 'error')
-    else:
-        flash('Name and message are required!', 'warning')
-
-    return redirect(url_for('index'))
-
-'''
-@app.route('/submit', methods=['POST'])
-def submit():
-    name = request.form.get('name')
-    message = request.form.get('message')
     date = request.form.get('date')
+    time = request.form.get('time')
+    message = request.form.get('message')
 
-    if name and date and message:
+    if name and date and time and message:
         try:
             # Write to Excel file
-            write_to_excel(date, name, message)
+            write_to_excel(date, time, name, message)
 
             # Upload to Firebase Storage
             upload_to_firebase('updates.xlsx', 'updates.xlsx')
@@ -86,10 +67,9 @@ def submit():
         except Exception as e:
             flash(f'Error: {e}', 'error')
     else:
-        flash('Name and message are required!', 'warning')
+        flash('Name, date, time, and message are required!', 'warning')
 
     return redirect(url_for('index'))
-
 
 if __name__ == '__main__':
     app.run(debug=True)
